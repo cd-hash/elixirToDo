@@ -3,18 +3,16 @@ defmodule MinimalToDo do
 
   general todo structure %{todo, %{todo => todo_item, notes => notes, priority => 1}}
 
-  create_list will instantiate our map which will hold all our to do items
+  create_list/0 creates a new list
+  create_list/1 creates a list pre filled with the data stored in the .csv file passed
 
   create_item: creates an item in the map where item.todo is the key and item.notes is the value
   """
-  def create_list do
-    Agent.start_link(fn -> %{} end, name: __MODULE__)
-  end
 
   def get_item(key) do
     item = Agent.get(__MODULE__, &Map.get(&1, key))
     case item do
-      nil -> {:error, "the item you searched for doesn't exist"}
+      nil -> {:error, "the item #{item} you searched for doesn't exist"}
       _ -> {:ok, item}
     end
 
@@ -23,8 +21,34 @@ defmodule MinimalToDo do
   def create_item(todo, priority \\ 5, notes \\ "") do
     item = get_item(todo)
     case item do
-      {:error, response} -> Agent.update(__MODULE__, &Map.put(&1, todo, %{todo: todo, notes: notes, priority: priority}))
-      {:ok, item} -> {:error, "the item you're trying to add already exists"}
+      {:error, _} -> Agent.update(__MODULE__, &Map.put(&1, todo, %{todo: todo, notes: notes, priority: priority}))
+      {:ok, item} -> {:error, "the item #{item} you're trying to add already exists"}
+    end
+  end
+
+  def _fill_initial_map(todo_items) do
+    [item | rest] = todo_items
+  end
+
+  def create_list do
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
+  end
+
+  def create_list(file_path) do
+    case File.read(file_path) do
+      {:ok, file_contents} -> [header | contents] = String.split(file_contents, "\r\n")
+      {:error, response} -> "#{response}\nYou probably typed the file path incorrectly.\nDouble check it."
+    end
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
+  end
+
+  def main do
+    start_from_file = IO.gets("do you want to start from a previous list or create a new one y/n: ")
+    |> String.trim
+    |> String.downcase
+    case start_from_file do
+      "y" -> IO.gets("Name of .csv to load: ") |> String.trim |> create_list()
+      "n" -> create_list()
     end
   end
 end

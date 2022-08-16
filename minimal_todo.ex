@@ -26,8 +26,12 @@ defmodule MinimalToDo do
     end
   end
 
-  def _fill_initial_map(todo_items) do
-    [item | rest] = todo_items
+  defp fill_initial_map(todo_items, map \\ %{})
+  defp fill_initial_map([], map), do: map
+  defp fill_initial_map([item | rest], map) do
+    [todo_item, notes, prio] = String.split(item, ",")
+    map = Map.put(map, todo_item, %{todo: todo_item, notes: notes, priority: prio})
+    fill_initial_map(rest, map)
   end
 
   def create_list do
@@ -39,7 +43,9 @@ defmodule MinimalToDo do
       {:ok, file_contents} -> [header | contents] = String.split(file_contents, "\r\n")
       {:error, response} -> "#{response}\nYou probably typed the file path incorrectly.\nDouble check it."
     end
-    Agent.start_link(fn -> %{} end, name: __MODULE__)
+    IO.puts(contents)
+    # initial_map = fill_initial_map(contents)
+    # Agent.start_link(fn -> initial_map end, name: __MODULE__)
   end
 
   def main do

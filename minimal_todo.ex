@@ -42,6 +42,10 @@ defmodule MinimalToDo do
     Agent.start_link(fn -> fill_initial_map(contents) end, name: __MODULE__)
   end
 
+  def delete_item(todo_item) do
+    Agent.update(__MODULE__, &Map.drop(&1, [todo_item]))
+  end
+
   def main do
     start_from_file = IO.gets("do you want to start from a previous list or create a new one y/n: ")
     |> String.trim

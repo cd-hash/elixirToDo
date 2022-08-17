@@ -15,7 +15,6 @@ defmodule MinimalToDo do
       nil -> {:error, "the item #{item} you searched for doesn't exist"}
       _ -> {:ok, item}
     end
-
   end
 
   def create_item(todo, priority \\ 5, notes \\ "") do
@@ -26,7 +25,7 @@ defmodule MinimalToDo do
     end
   end
 
-  defp fill_initial_map(todo_items, map \\ %{})
+  defp fill_initial_map(todo_items, map \\ %{}) # returns the function with all default fields filled in and calls itself
   defp fill_initial_map([], map), do: map
   defp fill_initial_map([item | rest], map) do
     [todo_item, notes, prio] = String.split(item, ",")
@@ -39,13 +38,8 @@ defmodule MinimalToDo do
   end
 
   def create_list(file_path) do
-    case File.read(file_path) do
-      {:ok, file_contents} -> [header | contents] = String.split(file_contents, "\r\n")
-      {:error, response} -> "#{response}\nYou probably typed the file path incorrectly.\nDouble check it."
-    end
-    IO.puts(contents)
-    # initial_map = fill_initial_map(contents)
-    # Agent.start_link(fn -> initial_map end, name: __MODULE__)
+    [header | contents] = File.read!(file_path) |> String.split("\r\n")
+    Agent.start_link(fn -> fill_initial_map(contents) end, name: __MODULE__)
   end
 
   def main do

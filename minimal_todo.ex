@@ -7,6 +7,14 @@ defmodule MinimalToDo do
   create_list/1 creates a list pre filled with the data stored in the .csv file passed
 
   create_item: creates an item in the map where item.todo is the key and item.notes is the value
+
+  fill_initial_map: the first func adds the default args needed and then returns and calls the func with all args
+  fill_initial_map/2 returns our map if it receives an empty list in the first arg this is our base case
+  fill_initial_map/2 is our core logic where we split our todo params, fill the map and call the our func with the rest of the list
+
+  get_item/1 checks if the item you searched for exists and returns it if it does
+
+  delete_item/1 takes a list of todos and deletes them from our todo list
   """
 
   def get_item(key) do

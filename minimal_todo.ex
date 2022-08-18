@@ -46,6 +46,10 @@ defmodule MinimalToDo do
     Agent.update(__MODULE__, &Map.drop(&1, [todo_item]))
   end
 
+  def quit do
+    Agent.stop(__MODULE__)
+  end
+
   def main do
     start_from_file = IO.gets("do you want to start from a previous list or create a new one y/n: ")
     |> String.trim

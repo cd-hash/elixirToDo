@@ -21,17 +21,25 @@ defmodule MinimalToDo do
   def get_item(key) do
     item = Agent.get(__MODULE__, &Map.get(&1, key))
     case item do
+      nil -> IO.puts("the item #{key} you searched for doesn't exist")
+      _ -> IO.puts("todo: #{item[:todo]}, notes: #{item[:notes]}, priority: #{item[:priority]}")
+    end
+    get_command()
+  end
+
+  defp item_exists(todo_item) do
+    item = Agent.get(__MODULE__, &Map.get(&1, todo_item))
+    case item do
       nil -> {:error, "the item #{item} you searched for doesn't exist"}
       _ -> {:ok, item}
     end
-    # get_command()
   end
 
   def create_item(todo, priority \\ 5, notes \\ "") do
-    item = get_item(todo)
+    item = item_exists(todo)
     case item do
       {:error, _} -> Agent.update(__MODULE__, &Map.put(&1, todo, %{todo: todo, notes: notes, priority: priority}))
-      {:ok, item} -> {:error, "the item #{item} you're trying to add already exists"}
+      {:ok, _} -> IO.puts("the item #{todo} you're trying to add already exists")
     end
     get_command()
   end
@@ -49,13 +57,13 @@ defmodule MinimalToDo do
   end
 
   def create_list(file_path) do
-    [header | contents] = File.read!(file_path) |> String.split("\r\n")
+    [_header | contents] = File.read!(file_path) |> String.split("\r\n")
     Agent.start(fn -> fill_initial_map(contents) end, name: __MODULE__)
   end
 
   def delete_item(todo_item) do
     Agent.update(__MODULE__, &Map.drop(&1, [todo_item]))
-    # get_command()
+    get_command()
   end
 
   def quit do
@@ -77,7 +85,7 @@ defmodule MinimalToDo do
     filename = IO.gets("what is the name of this todo list") |> String.trim
     case File.write(filename, prepared_data) do
       :ok -> IO.puts("CSV saved")
-      {:error, reason} -> IO.puts("could not save file #{filename}")
+      {:error, _reason} -> IO.puts("could not save file #{filename}")
     end
     get_command()
   end
